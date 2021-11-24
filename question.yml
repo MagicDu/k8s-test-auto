@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: question-service
+spec:
+  type: NodePort
+  ports:
+    - port: 9527
+      targetPort: 9527
+      nodePort: 30088
+  selector:
+    name: question
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: question-d
+spec:
+  selector:
+    matchLabels:
+      name: question
+  replicas: 2 # 2实例集群
+  template:
+    metadata:
+      labels:
+        name: question
+    spec:
+      containers:
+        - name: question
+          image: docker.soulhappy.com/soulhappy/question:latest # harbor镜像  地址，本地改了 host  文件
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9527
+          env:
+          - name: activeprofile
+            value: "prod"
+          - name: MYSQLSERVER
+            value: 192.168.10.75
+          - name: MYSQLPORT
+            value: "3306"
+          - name: REDISSERVER
+            value: 192.168.10.245
+          - name: REDISPORT
+            value: "6379"
